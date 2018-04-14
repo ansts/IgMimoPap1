@@ -1,0 +1,170 @@
+
+
+cl <- makeCluster(3)
+ex <- Filter(function(x) is.function(get(x, .GlobalEnv)), ls(.GlobalEnv))
+clusterEvalQ(cl, {library(Rtsne)})
+clusterExport(cl, ex)
+clusterExport(cl, list("zsc"), envir=environment())
+proct=proc.time()
+tsne20zsc=parLapply(cl,zsc,function(Z){Rtsne(Z, initial_dims = 20, perplexity = 50, max_iter = 1500)}) 
+stopCluster(cl)
+names(tsne20zsc)=c("ODXs790pzsc","rndp1zsc", "mixpzsc")
+print(proc.time()-proct)
+
+pdf(file="tsne20ODXs790azsc.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$ODXs790pzsc$Y, pch=16, cex=0.1, col=rgb(0.5,0.5,0.5,0.2),xlim=c(-30,30), ylim=c(-30,30))
+par(new=TRUE)
+plot(tsne20zsc$ODXs790pzsc$Y[fl790_pep5,], pch=16, col=reix790_5[fl790_pep5], cex=0.75, xlim=c(-30,30), ylim=c(-30,30))
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Selected Mimotopes with Five Highly Significant Clusters",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+pdf(file="tsne20ODXs790pepposzsc.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$ODXs790pzsc$Y, pch=16, cex=0.05, col=rgb(0.5,0.5,0.5,0.2),xlim=c(-30,30), ylim=c(-30,30))
+par(new=TRUE)
+plot(tsne20zsc$ODXs790pzsc$Y[fl790_peppos,], pch=16, col=rgb(1,0,0,0.75), cex=0.75, xlim=c(-30,30), ylim=c(-30,30))
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Selected Mimotopes with the Optimized Library",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+pdf(file="tsne20rndp1zsc.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$rndp1zsc$Y, pch=16, cex=0.1, col=rgb(0.2,0.2,0.2,0.2),xlim=c(-30,30), ylim=c(-30,30), xlab="D1", ylab="D2")
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Random Peptides",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+pdf(file="tsne20mixpazsc_RB.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$mixpzsc$Y, pch=16, col=rgb(0.1,0.1,0.1,0.3), cex=0.5, xlim=c(-40,40), ylim=c(-40,40), xlab="D1")
+par(new=TRUE)
+plot(tsne20zsc$mixpzsc$Y[mixpeplab==1,], pch=16, col=rgb(1,0,0,0.3), cex=0.5, xlim=c(-40,40), ylim=c(-40,40), xlab="", ylab="",xaxt="n",yaxt="n")
+par(new=TRUE)
+plot(tsne20zsc$mixpzsc$Y[mixpeplab==4,], pch=16, col=rgb(0,0,1,0.3), cex=0.5, xlim=c(-40,40), ylim=c(-40,40), xlab="", ylab="",xaxt="n",yaxt="n")
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Mixture of Selected Mimotopes and Random Peptides",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+cl <- makeCluster(7)
+ex <- Filter(function(x) is.function(get(x, .GlobalEnv)), ls(.GlobalEnv))
+clusterExport(cl, ex)
+clusterExport(cl, list("tsne20zsc"), envir=environment())
+kmtsne20ODXbtwn=parSapply(cl,seq(10,3000, by=10),function(i){
+  k=kmeans(tsne20zsc$mixpzsc$Y,i, iter.max = 100, nstart = 10)
+  return(c(i,k$betweenss/k$totss))
+})
+stopCluster(cl)
+kmtsneO20DXbtwn=t(kmtsne20ODXbtwn)
+
+plot(t(kmtsne20ODXbtwn[,100:300]), xlab="N Clusters", ylab="Proportion of SS")
+kmtsne20ODX=kmeans(tsne20zsc$mixpzsc$Y,350, iter.max = 350, nstart = 50)
+
+
+pdf(file="tsne20mixp1000cl.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$mixpzsc$Y, pch=16, cex=0.3, col=kmtsne20ODX$cluster,xlim=c(-40,40), ylim=c(-40,40))
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Mixture of Selected Mimotopes and Random Peptides",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+mix20rep=(table(kmtsne20ODX$cluster,mixpeplab)[,1]/table(kmtsne20ODX$cluster,mixpeplab)[,2])
+mix20R=sapply(seq_along(kmtsne20ODX$cluster), function(i){mixrep[kmtsne20ODX$cluster[i]]})
+hist(mix20rep, breaks = 50)
+mix20tab=(table(kmtsne20ODX$cluster,mixpeplab)[,1:2])
+m20Nres=lm20N$residuals
+
+plot(mix20tab[,2], mix20tab[,1])
+mix20N=mvnormalmixEM(mix20tab[,c(2,1)], mu=list(c(150,150),c(220,120)))
+mdl=data.frame(x=as.double(mix20tab[mix20N$posterior[,1]>0.9,2]),y=as.double(mix20tab[mix20N$posterior[,1]>0.9,1]))
+lm20N=lm(y~x,data=mdl)
+mdl=data.frame(x=as.double(mix20tab[,2]),y=as.double(mix20tab[,1]))
+
+y1=predict.lm(lm20N,newdata=mdl)
+lm20Nres=mdl$y-y1
+hist(lm20Nres, breaks = 100)
+plot(mdl$y,y1)
+zlm20Nres=lm20Nres/sd(lm20Nres)
+z20Nfl=zlm20Nres<(-2)
+plot(mix20tab[,2], mix20tab[,1], col=z20Nfl*1+1)
+mixzfs=sapply(seq_along(kmtsne20ODX$cluster), function(i){z20Nfl[kmtsne20ODX$cluster[i]]})
+underrep20Table=table(mixzfs, mixpeplab)
+undR20clpep=data.frame(pep=mixpep[mixpeplab==2 & mixzfs],cluster=as.integer(kmtsne20ODX$cluster[mixpeplab==2 & mixzfs]),stringsAsFactors= FALSE)
+undR20clpepL=split(undR20clpep$pep,as.factor(undR20clpep$cluster))
+
+pdf(file="Clusters20Reprsnt.pdf",width=4, height=4)
+opar=par(mai=c(1,1,0.5,0.5))
+plot(mix20tab[,2], mix20tab[,1], col=z20Nfl*1+1, pch=16, cex=0.5, cex.axis=0.5, cex.lab=0.75, ylab="Number of Mimotopes", xlab="Number of Random Peptides")  #xaxt="n", yaxt="n"
+box(lwd=2)
+#axis(1,lwd=2,lwd.ticks = 1,cex=0.25);axis(2,lwd=2, lwd.ticks = 1,cex=0.25);axis(3,lwd=2,lwd.ticks = 0, labels = FALSE);axis(4,lwd=2,lwd.ticks = 0, labels = FALSE)
+par(opar)
+dev.off()
+
+pdf(file="tsne20mixp1000clre.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$mixpzsc$Y, pch=16, cex=0.3, col=(mixzfs)*1+2*(mixpeplab==4)+1,xlim=c(-40,40), ylim=c(-40,40))
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Mixture of Selected Mimotopes and Random Peptides",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+plot(table(kmtsne20ODX$cluster,mixpeplab)[,1],table(kmtsne20ODX$cluster,mixpeplab)[,2])
+
+pdf(file="tsne20mixp1000clN.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$mixpzsc$Y, pch=16, cex=0, xlim=c(-40,40), ylim=c(-40,40))
+text(tsne20zsc$mixpzsc$Y, pch=16, cex=0.05,col=(mixzfs)*1+2*(mixpeplab==4)+1, labels=kmtsne20ODX$cluster, xlim=c(-40,40), ylim=c(-40,40))
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Mixture of Selected Mimotopes and Random Peptides",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+
+smplcl=sample(1:350,49)
+table(z20Nfl[smplcl])
+smplu=smplcl[z20Nfl[smplcl]]
+smplo=smplcl[!z20Nfl[smplcl]]
+
+for (i in smplu){
+  fnm=paste("undeR",i,".csv", sep="")
+  write.csv(mixpep[kmtsne20ODX$cluster==i],file=fnm)
+}
+for (i in smplo){
+  fnm=paste("oveR",i,".csv", sep="")
+  write.csv(mixpep[kmtsne20ODX$cluster==i],file=fnm)
+}
+
+sel20cl=c(smplu,smplo)
+
+pdf(file="tsne20mixpselcl.pdf",width=14, height=14)
+opar=par(mai=c(2,2,1.5,0.5), ann=FALSE)
+plot(tsne20zsc$mixpzsc$Y, pch=16, col=rgb(0.9,0.9,0.9,0.5), cex=0.3, xlim=c(-40,40), ylim=c(-40,40))
+text(kmtsne20ODX$centers[selcl,], pch=16, cex=2,col=((1:49)<8)*1+1, labels=(1:350)[sel20cl], xlim=c(-40,40), ylim=c(-40,40))
+mtext("D1",side=1, cex=2, line=5)
+mtext("D2",side=2, cex=2, line=5)
+mtext("Mixture of Selected Mimotopes and Random Peptides",side=3, cex=2, line=5)
+par(opar)
+dev.off()
+###################
+pdf(file="pcaODXs.pdf",width=4, height=4)
+par(mai=c(1,1,1,1))
+barplot(get_eig(pcaODxs)[,2], las=2, ylab="Percentage of Variance Explained",cex.axis=0.5,cex.lab=0.75)
+par(new=TRUE)
+plot(1:35,get_eig(pcaODxs)[,3], yaxt="n", pch=16, cex=0.3, ylim=c(0,100), ylab="", xlab="Number of Dimensions",cex.axis=0.5, cex.lab=0.75)
+lines(1:35,get_eig(pcaODxs)[,3])
+axis(4, at=z,labels=z, las=2,cex.axis=0.5)
+par(new=FALSE)
+dev.off()
+``
