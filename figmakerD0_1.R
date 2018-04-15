@@ -2,6 +2,10 @@ require("lattice")
 require(Biostrings)
 require(plot3D)
 require(gplots)
+require(Rtsne)
+require(parallel)
+require(factoextra)
+require(mixtools)
 
 # Fig. 4 A 
 
@@ -27,8 +31,6 @@ dev.off()
 
 # Tsne representations
 
-require(Rtsne)
-require(parallel)
 zscore=read.csv(file="zsc.csv", header = TRUE)
 rownames(zscore)=zscore$X
 zscore=zscore[,-1]
@@ -89,8 +91,11 @@ reix790_o5=sapply(ODXs_790_30[,2], function(i){
 fl790_pepneg=ODXs_790_30[,1] %in% pepnegtve
 fl790_pepneglo=ODXs_790_30[,1] %in% pepnegtlo
 
+kmtsneODX=kmeans(tsnezsc$mixpzsc$Y,350, iter.max = 500, nstart = 50)
 mixtab=table(kmtsneODX$cluster,mixpeplab)[,1:2]
 mix2N=mvnormalmixEM(table(kmtsneODX$cluster,mixpeplab)[,1:2], k=3)
+mix2Nfls=apply(mix2N$posterior,2,">",0.9)
+
 
 
 
@@ -160,7 +165,6 @@ dev.off()
 # Suppl. Fig. 5
 #
 
-require(factoextra)
 pdf(file="pcaODXs.pdf",width=4, height=4)
 par(mai=c(1,1,1,1))
 barplot(get_eig(pcaODxs)[,2], las=2, ylab="Percentage of Variance Explained",cex.axis=0.5,cex.lab=0.75)
