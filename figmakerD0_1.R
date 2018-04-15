@@ -7,7 +7,6 @@ require(parallel)
 require(factoextra)
 require(mixtools)
 
-
 # Fig. 4 A 
 
 pdf(file="genPWM.pdf", width=3, height=5)
