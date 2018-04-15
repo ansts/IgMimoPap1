@@ -39,6 +39,7 @@ ODXs790pzsc=t(apply(ODXs_790_30,1,function(l){
   unlist(zscore[unlist(p),])
 }))
 rownames(ODXs790pzsc)=ODXs_790_30[,1]
+pcaODxs=prcomp(ODXs790pzsc)
 
 rndpep1u=unique(rndpep1)
 rndp1zsc=t(sapply(rndpep1u,function(l){
