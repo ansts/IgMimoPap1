@@ -1,8 +1,10 @@
-
-# Fig. 4 A 
 require("lattice")
 require(Biostrings)
 require(plot3D)
+require(gplots)
+
+# Fig. 4 A 
+
 pdf(file="genPWM.pdf", width=3, height=5)
 par(mfrow=c(1,1))
 generalPSSM=consensusMatrix(ODXsel[,1])
@@ -17,7 +19,7 @@ levelplot(t(generalPWM), cuts=100, col.regions=jet.col(1280),  xlab="Position", 
 dev.off()
 
 # Suppl. Fig. 2
-require(gplots)
+
 pdf(file="hmodx79030pwmx.pdf",width=14, height=14)
 cpl1=colorRampPalette(c("black","black","#001030","#0050AA","#10AA10","#FFFF00","#FFA000","#B50000"))(n=128)
 heatmap.2(odx79030pwmx,distfun = dist, hclustfun=hclwrd, scale="none",col=cpl1,  trace="none", cexRow = 0.01, cexCol =0.5)
@@ -67,6 +69,30 @@ tsne20zsc=parLapply(cl,zsc,function(Z){Rtsne(Z, initial_dims = 20, perplexity = 
 stopCluster(cl)
 names(tsnezsc)=c("ODXs790pzsc","rndp1zsc", "mixpzsc")
 print(proc.time()-proct)
+
+
+fl790_peppos=ODXs_790_30[,1] %in% peppositive
+fl790_pep5=ODXs_790_30[,1] %in% pep_top_5
+fl790_pepother5=ODXs_790_30[,1] %in% pep_other_5
+ixpep5=c(2,6,9,10,11)
+ixpepother5=c(115,61,55,53, 258)
+ixpep5=cbind(ixpep5,c(1,2,3,4,5))
+ixpepother5=cbind(ixpepother5,c(1,2,3,4,5))
+reix790_5=sapply(ODXs_790_30[,2], function(i){
+  if ((i+1) %in% ixpep5[,1]) res=ixpep5[ixpep5[,1]==(i+1),2] else res=0
+  return(res)
+})
+reix790_o5=sapply(ODXs_790_30[,2], function(i){
+  if ((i+1) %in% ixpepother5[,1]) res=ixpepother5[ixpepother5[,1]==(i+1),2] else res=0
+  return(res)
+})
+fl790_pepneg=ODXs_790_30[,1] %in% pepnegtve
+fl790_pepneglo=ODXs_790_30[,1] %in% pepnegtlo
+
+mixtab=table(kmtsneODX$cluster,mixpeplab)[,1:2]
+mix2N=mvnormalmixEM(table(kmtsneODX$cluster,mixpeplab)[,1:2], k=3)
+
+
 
 #
 # Fig. 6A
