@@ -134,13 +134,19 @@ c10SD=rowSds(c10vnn)
 c10vagr=lapply(c10pep, function(x){c10gr[c10gr$pep==x,1]})
 c10MnSD=data.frame(unlist(c10Mean), unlist(c10SD), unlist(c10vagr), stringsAsFactors = FALSE)
 colnames(c10MnSD)=c("Mean","SD","Class")
-
+c10clpar=aggregate(c10MnSD[,c(1,2,5)],list(unlist(c10MnSD[,3])),"mean")
+clnm=c10clpar$Group.1
+clnot=clnm[1:8]
 
 # 
 # Normalized NND
 #
 
 n=dim(c10vnn)[2]
+c10clnndist=lapply(clnm, function(c){
+                            x=as.matrix(dist(scale(c10vnn[c10MnSD[,3]==c,], center = TRUE)))
+                            sapply(1:nrow(x),function(l){min(x[l,-l])})
+                          })
 c10clN=sapply(clnot,function(i){nrow(c10vnn[c10MnSD[,3]==i,])}) # N of points (peptides) per library
 c10vol=prod(2*colSds(c10vnn))*2*pi^(n/2)/(n*gamma(n/2)) # volume of the cloud of all the data as n-dimensional elipsoid with radii aproximated as the 2SD along each dimension
 c10clspecdist0=(c10vol/c10clN)^(1/n)  # library specific mean distance between the points as the side of the hypercube  of the volume per point
@@ -149,6 +155,7 @@ names(c10clnndistNorm)=clnot
 c10clnndistNormn=sapply(c10clnndistNorm, median)
 c10clnndistNorm=lapply(order(c10clnndistNormn, decreasing = TRUE),function(i){c10clnndistNorm[i]})
 c10clnndistNorm=unlist(c10clnndistNorm, recursive = FALSE)
+c10clnndistNorm_b=c10clnndistNorm[names(order(unlist(lapply(c10clnndistNorm,mean))))]
 
 mc10clnndist=melt(c10clnndistNorm)
 mc10clnndist$L1=factor(mc10clnndist$L1)
@@ -157,6 +164,31 @@ summary(glht(c10nnglm, mcp(L1="Tukey")))
 
 boxplot(c10clnndistNorm, notch=TRUE, ylab="NND", las=2, log="y", varwidth=TRUE)
 boxplot(lapply(c10clnndistNorm,log), notch=TRUE, ylab="log (NND)", las=2,  varwidth=TRUE)
+
+# Total correlation between the peptides in each library 
+
+c10clKLD0=sapply(clnot, function(c){
+  medKLD(c10vnn[c10MnSD[,3]==c,])
+})
+colnames(c10clKLD0)=clnot
+
+# Correlations between patients as z score
+
+require(psychometric)
+require(reshape2)
+require(multicomp)
+
+c10clcorpat=lapply(clnm,function(c){X=cor(c10vnn[c10MnSD[,3]==c,]); X[lower.tri(X)]})
+c10clcorpatz=c10clcorpat
+c10clcorpatz=lapply(c10clcorpatz,r2z)
+c10clcorpatzs=c10clcorpatz[1:8]
+corpatzmn=lapply(c10clcorpatzs, mean)
+c10clcorpatzso=sapply(order(unlist(corpatzmn), decreasing=TRUE),function(i){c10clcorpatzs[i]})
+corptzDf=as.data.frame(c10clcorpatzs)
+corptzm=melt(corptzDf)
+corpatsLm=glm(value~variable,data=corptzm)
+summary(glht(corpatsLm, mcp(variable="Tukey")))
+                    
 
 
 # Constructs fig 5 - criteria
