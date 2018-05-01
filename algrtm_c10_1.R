@@ -136,7 +136,27 @@ c10MnSD=data.frame(unlist(c10Mean), unlist(c10SD), unlist(c10vagr), stringsAsFac
 colnames(c10MnSD)=c("Mean","SD","Class")
 
 
+# 
+# Normalized NND
+#
 
+n=dim(c10vnn)[2]
+c10clN=sapply(clnot,function(i){nrow(c10vnn[c10MnSD[,3]==i,])}) # N of points (peptides) per library
+c10vol=prod(2*colSds(c10vnn))*2*pi^(n/2)/(n*gamma(n/2)) # volume of the cloud of all the data as n-dimensional elipsoid with radii aproximated as the 2SD along each dimension
+c10clspecdist0=(c10vol/c10clN)^(1/n)  # library specific mean distance between the points as the side of the hypercube  of the volume per point
+c10clnndistNorm=lapply(1:8,function(i){c10clnndist[[i]]/c10clspecdist0[i]}) # the normalized NND per library
+names(c10clnndistNorm)=clnot
+c10clnndistNormn=sapply(c10clnndistNorm, median)
+c10clnndistNorm=lapply(order(c10clnndistNormn, decreasing = TRUE),function(i){c10clnndistNorm[i]})
+c10clnndistNorm=unlist(c10clnndistNorm, recursive = FALSE)
+
+mc10clnndist=melt(c10clnndistNorm)
+mc10clnndist$L1=factor(mc10clnndist$L1)
+c10nnglm=glm(log(value)~L1, data=mc10clnndist)
+summary(glht(c10nnglm, mcp(L1="Tukey")))
+
+boxplot(c10clnndistNorm, notch=TRUE, ylab="NND", las=2, log="y", varwidth=TRUE)
+boxplot(lapply(c10clnndistNorm,log), notch=TRUE, ylab="log (NND)", las=2,  varwidth=TRUE)
 
 
 # Constructs fig 5 - criteria
