@@ -1,5 +1,6 @@
 # IgMimoPap1
-
+# GENERATING AND TESTING MIMOTOPE LIBRARIES
+#
 # Scripts, functions and data relevant to results presented on Figure 5 and Suppl. Fig. 2 - 
 # comparison between IgM reactivity with different peptide libraries
 
@@ -19,7 +20,11 @@
 # algrtm_c10_1.R	-  Main script (c10 pipeline) for comparison between mimotope libraries based on 10 patients' serum IgM reactivity 
 # figmakerD0.R, figmakerD0_1.R	- Figures 4,6,7,8; suppl 2,4,5
 
-#filepr.R	c10, findallscore.R,	findmaxscore.R,	findmxscore.R,	findpvscore.R,	gprLNSVM.R, gpraddNames.R, profchk.R, pscnt.R, rndpeppre.R
+# filepr.R	c10, findallscore.R,	findmaxscore.R,	findmxscore.R,	findpvscore.R,	gprLNSVM.R, gpraddNames.R, profchk.R, pscnt.R, rndpeppre.R
 # - Auxiliary functions
+#
+# A PROOF OF PRINCIPLE PREDICTOR BASED ON THE OPTIMIZED MIMOTOPE LIBRARY
+#
+#
 
 ...
