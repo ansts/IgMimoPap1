@@ -41,11 +41,10 @@ P12=P12[!P12[,1] %in% P12o[,1],]
 colnames(P12o)=colnames(P12)
 P12=rbind(P12,P12o)
 P12=P12[order(P12[,2], decreasing=TRUE),]
-seqerr=aamut(P12[P12[,2]>99,1])
-P12nm=P12[!P12[,1] %in% seqerr,]
-
-# ODXnm - P12 with no "false" sequences arising from few reading errors of highly represented sequences  
-# Taking only sequences with 3-10 copies
+seqerr=aamut(P12[P12[,2]>99,1]) # use aamut() to generate all sequences that differ from highly represented sequences by a single residue 
+P12nm=P12[!P12[,1] %in% seqerr,] # remove these potentially false sequences erring on the safe 
+# side. ODXnm - P12 with no "false" sequences arising from few reading errors of highly  
+# represented sequences derived from P12nm by further correction for some of the removed sequences # based on P12nm then taking only sequences with 3-10 copies.
 
 ODXsel=ODXnm[ODXnm[,2]>2 & ODXnm[,2]<11,]
 
