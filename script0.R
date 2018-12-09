@@ -44,7 +44,7 @@ P12=P12[order(P12[,2], decreasing=TRUE),]
 seqerr=aamut(P12[P12[,2]>99,1])
 P12nm=P12[!P12[,1] %in% seqerr,]
 
-# ODXnm - P12 with no "false" sequences based on reading errors of highly represented sequences  
+# ODXnm - P12 with no "false" sequences arising from few reading errors of highly represented sequences  
 # Taking only sequences with 3-10 copies
 
 ODXsel=ODXnm[ODXnm[,2]>2 & ODXnm[,2]<11,]
